@@ -25,9 +25,7 @@
 
 \section{Introduction}
 
-This research protocol describes how to record the search for information sources for a bachelor thesis. For each of the usually two to four main questions presented in the thesis introduction, a log of the search for sources is kept in parallel with the research process. Concise records are also kept of search attempts that were not very successful and did not yield suitable documents. The preliminary research that led to the formulation of the research question should be documented under "Preparatory Research"; this may be given as a summary rather than a detailed table.
-
-The template provided here for the research protocol can be adapted continuously (for example as a Word file) to fit the individual search process. The completed protocol may be appended to the thesis as an annex without the instructions and example included here.
+This research protocol describes how to record the search for information sources for a bachelor thesis. The preliminary research that led to the formulation of the research question should be documented under "Preparatory Research"; this may be given as a summary rather than a detailed table.
 
 The columns of the research protocol are to be understood as follows:
 \begin{description}
@@ -64,32 +62,98 @@ The columns of the research protocol are to be understood as follows:
 
 \section{Preparatory Research}
 
+The general idea is to create an early AI System that detects suicidal humans by analysing their social media use.
+
+But the new EU AI Act aims to regulate the use of artificial intelligence (AI) to prompte trustworthy AI, while ensuring protection against harmful effects of AI systems. (https://artificialintelligenceact.eu/article/1/) An suicide detection AI is bound to this Act as an High-Risk AI System and therefore needs to be auditable, which is still a difficult task, when using a complex model such as an LLM.
+
+One of the options, although not yet researched well on llms is the use of SHAP Values. (https://christophm.github.io/interpretable-ml-book/shapley.html)
+
+
+
 \section{Main Question 1}
-Question: How did X affect Y?
+Question: What are indications in a text, that someone is suicidal?
 
 \subsection{Search Strategy}
 \begin{itemize}
-    \item \textbf{Date:} 01.01.2024
-    \item \textbf{Duration:} 30 min
-    \item \textbf{Search terms:} example search terms
-    \item \textbf{Search tool:} example search tool
+    \item \textbf{Date:} 06.01.2026
+.   \item \textbf{Duration:} 30 min
+    \item \textbf{Search terms:} indication suicide text
+    \item \textbf{Search tool:} google schoolar
 \end{itemize}
 
 \subsection{Selection Criteria}
-List inclusion/exclusion criteria clearly in bullet points.
+
+\begin{itemize}
+	\item relevance to Main Question 1
+	\item actuallity
+	\item reputation
+\end{itemize}
+
 \begin{table}[H]
     \centering
-    \begin{tabular}{|p{5cm}|p{2cm}|p{5cm}|p{2cm}|}
+    \begin{tabular}{|p{5cm}|p{2.5cm}|p{5cm}|p{2cm}|}
         \hline
         Retained document & Source type & Content & Relevance \\
         \hline
-        example retained document & example source type & example content & *** \\
+        Identiﬁcation of Imminent Suicide Risk Among YoungAdults using Text Messages & proceeding & descriptive knowledge & *** \\
+        \hline
+		Words of Suicide: Identifying Suicidal Risk in Written Communications & inproceeding & descriptive knowledge & *** \\
+        \hline
+		Predicting the Risk of Suicide by Analyzing the Text of Clinical Notes & inproceeding & evaluative knowledge & ** \\
+        \hline
+		Online suicide prevention through optimised text classification & article & evaluative knowledge & ** \\
+        \hline
+		Analyzing Suicide Risk From Linguistic Features in Social Media: Evaluation Study & article & evaluative knowledge & * \\
+        \hline
+		The Youth Risk Behavior Surveillance System: Updating Policy and Program Applications & article & descriptive knowledge & * \\
         \hline
     \end{tabular}
     \caption{Research log for Main Question 1}
     \label{tab:research_log_mq1}
 \end{table}
 
+words of suicide: DOI: 10.1109/BigData52589.2021.9671472
+
+online suicide prevention: https://doi.org/10.1016/j.ins.2018.02.014
+
 \section{Main Question 2}
+Question: Can Shapley Values be used to explain how an LLM acts?
+
+\subsection{Search Strategy}
+\begin{itemize}
+    \item \textbf{Date:} 06.01.2026
+.   \item \textbf{Duration:} 30 min
+    \item \textbf{Search terms:} SHAPley LLM xAI
+    \item \textbf{Search tool:} google schoolar
+\end{itemize}
+
+\subsection{Selection Criteria}
+
+\begin{itemize}
+	\item relevance to Main Question 2
+	\item actuallity
+	\item reputation
+\end{itemize}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{5cm}|p{2.5cm}|p{5cm}|p{2cm}|}
+        \hline
+        Retained document & Source type & Content & Relevance \\
+        \hline
+		\hline
+        Explainable artificial intelligence (XAI): from inherent explainability to large language models & misc & evaluative knowledge & *** \\
+        \hline
+		Explaining Large Language Models Decisions Using Shapley Values & misc & evaluative knowledge & * \\
+        \hline
+		Explainable AI Frameworks for Large Language Models in High-Stakes Decision-Making & inproceedings & evaluative knowledge & ** \\
+        \hline
+		llmSHAP: A Principled Approach to LLM Explainability & misc & descriptive knowledge & *** \\
+        \hline
+        
+    \end{tabular}
+    \caption{Research log for Main Question 2}
+    \label{tab:research_log_mq2}
+\end{table}
 
 \end{document}
