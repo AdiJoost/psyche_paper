@@ -29,7 +29,7 @@
 %-------------------------
 \input{title}
 
-\section{Introduction}
+\section{Einführung}
 
 Die Erfolge in der Suizidprävention sind seit Jahren stagnierend (404 error). Ein Suizid ist nicht nur ein Verlust einer einzelnen Person, sondern hat auch weitreichende schwere Einflüsse auf die Hinterbliebenen. Daher ist es wichtig, die Forschung in diesem Bereich voran zu treiben, um Erkentnisse zu gewinnen, wie eine geplante Selbsttötung erkannt und verhindert werden kann.
 
@@ -41,16 +41,120 @@ Da die LLMs in sehr vielen Bereichen Einzug erhalten haben, hat die Europäische
 
 Zu diesen Auflagen gehört auch, dass das Modell interpretierbar sein muss. Dass heisst, eine menschliche Person muss nachvollziehen können, warum das System bei einer Person anschlägt und bei einer anderen nicht. Die Erklärbarkeit von LLMs ist aber noch immer ein ungeklärtes Feld der Forschung (High Stakes, XAI). (ExplainShapley) hat ein System vorgeschlagen, dass mit Hilfe der Shapley Values zu erklären versucht, welche Wörter des Inputs zum Output beigetragen haben.
 
-In dieser Arbeit wird 
+In dieser Arbeit wird untersuch, ob mit Hilfe von Shapley Values in einem AI System sichtbar gemacht werden kann, warum ein System bei einem Text entscheidet, ob der Autor des Textes suizidgefährdet ist oder nicht.
 
 
-\section{Research Question}
+\section{Forschungsfrage}
+Davon ausgehend, dass die Vortschritte in der Suizidprävention in den letzten Jahren stagnierend waren und es nun mit AI neue Möglichkeiten gibt, diese voran zu treiben, jedoch der Vortschritt durch Regulatorien gebremst wird, stellt sich die Frage:
 
-\section{Methodology}
-\section{Results}
+\begin{itemize}
+    \item Wie kann mit Hilfe von Shapley Values die Entscheidungsfindung in LLMs beim Beurteilen der Suizidgefährdung sichtbar gemacht werden?
+\end{itemize}
+
+\section{Methodik}
+\subsection{Shapley Values}
+\citeauthor{Shapley+1953+307+318} hat 1953 in Rahmen seiner Forschung die Shapley Values erstmals vorgestellt. Es handelt sich dabei um eine Methode, den individuellen Beitrag eines Spielers zum Gesamterfolg der Gruppe zu messen. Die Shapley Values für einen Spieler $j$ ist dabei definiert in \eqref{eq:shapley_values}.
+
+\begin{equation}
+\label{eq:shapley_values}
+    \phi_j(val) = \sum_{S \subseteq \{1,...,p\} \setminus \{j\}} \frac{|S|! (n - |S| - 1)!}{n!} (val(S \cup \{j\}) - val(S))
+\end{equation}
+
+Intuitiv kann $\phi_j(val)$ als Auszahlung für jeden Spieler einer Manschaft gesehen werden. Zum Beispiel haben wir ein Fussballteam, dass an einer Weltmeisterschaft ein Preisgeld von 1 Million erhält. Nun stellt sich die Frage, wie dieses Geld aufgeteilt wird. Wir gehen dabei davon aus, dass die Spieler das gesamte Geld unter sich aufteilen. Eine Möglichkeit wäre, das Geld gleichmässig an alle SPieler zu verteilen, aber ist dies die fairste Variante? Vielleicht gibt es ein Spieler im Team, der mehr als die Hälfte aller Tore im Turnier erziehlt hat, während ein anderer bei allen Spielen nur auf der Ersatzbank sass. Stellen wir uns vor, es auch ein zweites Team, dass nun dem guten Spieler einen Deal vorschlägt im Sinne von: Wenn du in unser Team kommst, erhälst du nicht den Anteil wie jeder andere, sondern bekommst 20\% des Preisgeldes. Der gute Spieler würde nun das Team wechseln, dass neue Team gewinnt nun das Preisgeld und die Aufteilung würde anders aussehen.
+
+Die Shapley Values sollen im Sinne der Spieltheorie beschreiben, welche Auszahlung ein einzelner Spieler von einem Gewinn vordern kann. Wird ihm ein Preisgeld unterhalb des Wertes gegeben, sollte der Spieler in Erwägung ziehen, das Team zu wechseln.
+
+Aus diesem Beispiel lassen sich auch die vier Axiome der Formel \eqref{eq:shapley_values} schliessen:
+
+\subsubsection{Effizienz}
+Die Summe aller Shapley Values entspricht dem Gesamtwert der Koalition aller Spieler. Formal ausgedrückt in \eqref{eq:efficiency}.
+
+\begin{equation}
+\label{eq:efficiency}
+    \sum_{i = 1}^{n} \phi_i(val) =  val(N)
+\end{equation}
+
+Das heisst im Beispiel, dass wenn man das Preisgeld aller Spieler zusammenzählt, so erhalten wir das gesamte Preisgeld von 1 Million. Wir können den Spielern nicht mehr Geld zahlen, als wir gewonnen haben.
+
+\subsubsection{Symmetrie}
+Symmetrie bedeutet, dass Spieler, die einen gleichen Beitrag zum Erfolg eines Teams beitragen, die gleiche Auszahlung erhalten. Formal beschrieben in \eqref{eq:sym1} und \eqref{eq:sym2}, wenn für alle Koalitionen $S$ gilt:
+
+\begin{equation}
+\label{eq:sym1}
+    val(S \cup \{j\}) = val(S \cup \{i\})
+\end{equation}
+
+dann
+
+\begin{equation}
+\label{eq:sym2}
+    \phi_j(val) = \phi_i(val)
+\end{equation}
+
+\subsubsection{Dummy Player}
+Ein Spieler, der nichts zum Erfolg des Teams beiträgt, erhält eine Auszahlung von 0. Formal beschrieben in \eqref{eq:dum1} und \eqref{eq:dum2}, wenn für alle Koalitionen $S$ gilt:
+
+\begin{equation}
+\label{eq:dum1}
+    val(S \cup \{j\}) = val(S)
+\end{equation}
+
+dann
+
+\begin{equation}
+\label{eq:dum2}
+    \phi_j(val) = 0
+\end{equation}
+
+\subsubsection{Additivität}
+Wenn das Team an zwei Turnieren mitmacht, so ist der Beitrag zum Teamerfolg über beide Turniere gleich der Summe der Beiträge aus jedem einzelnen Turnier. Formal ausgedrückt in \eqref{eq:additivitat}.
+
+\begin{equation}
+\label{eq:additivitat}
+    \phi_j(v + w) = \phi_j(v) + \phi_j(w)
+\end{equation}
+
+Dass bedeutet, dass das Preisgeld, dass ein Spieler nach zwei Turnieren erhalten hat, ist gleich dem Preisgeld aus dem ersten Turnier und dem Preisgeld aus dem zweiten Turnier. Es bedeutet aber nicht, dass der Spieler in beiden Turnieren das gleiche Geld erhalten hat. Vielleicht war er beim zweiten Turnier verletzt und war somit ein Null-Spieler und erhielt kein Preisgeld.
+
+\subsection{Genutze Daten}
+ \citeauthor{RABANI2023291} haben in ihrer Arbeit unter anderem einen Datensatz erstellt, die kurze Posts von zwei Social Media Plattformen Twitter (heute X) und reddit beinhalten. Die Forschenden haben dabei in Unterforen zum Thema Suizidalität gesucht und insgesamt 19915 tweets und reddit posts gesammelt. Mit Hilfe von Psychologen und Mental Health Experteinnen wurden die Daten in <no risk>, <moderate-risk> und <high-risk> eingeteilt. Dieser Datensatz bildet die Grundlage für alle Experimente in dieser Arbeit.
+
+\subsection{Vorhersage eines LLMs}
+Ein LLM ist im Grunde genommen nichts weiter als ein Modell, dass von einem angefangenen Text das nächste Wort vorhersagt. Würde man zum Beispiel dem LLM den Anfang des Satzes <Der Himmel ist ...> geben, so würde es das Wort <Blau> oder <bewölkt> oder ähnliches antworten. So kann das LLM nun selbst einen Text generieren, indem die Antwort des Models zum ursprünglichen Text hinzugefügt wrid, und das Spiel wieder von vorne beginnt. Auf <Der Himmel ist blau> folgt die Vorhersage für das Satzzeichen <.>.
+
+In dieser Arbeit wird dem zu testenden LLM ein Systemprompt und ein suizidaler Post übergeben. Der Systemprompt enthält die Aufforderung, nur mit Ja oder Nein zu antworten.
+
+\subsubsection{Beispiel einer Vorhersage}
+Es wird anhand des Beispielposts \ref{qt:suicide} gezeigt, wie der Ablauf für die Vorhersage aussieht. 
+\begin{figure}[h]
+    \begin{quote}
+    I'm going to kill myself because I am fed up of surviving for no reason, there's nothing I enjoy,  I've never really enjoyed anything. I am a boring person that no one wants around, which is why over the last ten years I've steadily lost any hope that things will ever get better. Doctors can't do anything, not even sure they're that good at dealing with this for anyone. I've spent the last of my savings on a trip which I knew wouldn't make me feel better, but I did it anyway because what else can I do. There's no reason to go home and no reason to stay here, can't really anyway. Just got to work up the courage to do what I've known is the best solution for me since I was 10.
+ \end{quote}
+ \caption[Post eines nicht bekannten Authors aus Rabani et al.]{Post eines nicht bekannten Authors aus dem Datensatz von \citeauthor{RABANI2023291}}
+ \label{qt:suicide}
+\end{figure}
+
+Das LLM erhält als Textinput die Zusammensetzung von Systemprompt und Post, wie in \ref{qt:inputtext} zu sehen ist.
+
+\begin{figure}[h]
+    \begin{quote}
+    You are a helpful assistant. You are task with identifying, whether the post came from a person, that is suicidal or not. You get the title of the post and the text from the post. Answere only with 'yes' or 'no' Just do it.
+    I'm going to kill myself because [...] I was 10.
+ \end{quote}
+ \caption{Beispiel eines Inputs, zu dem das LLM eine Vorhersage macht}
+ \label{qt:inputtext}
+\end{figure}
+ 
+ Wenn das LLM als nächstes Wort auf diesen Input <Yes> antwortet, so bedeutet das, dass das LLM vorhersagt, die Authorin des Textes wäre Suizidgefährdet. Ist die Vorhersage <No>, so geht das System davon aus, die Person wäre nicht suizidgefährded. Antwortet das LLM mit einem anderen Wort, so ist die Vorhersage technisch fehlgeschlagen. Ein Yes, wird in die Zahl 1, ein No in die Zahl 0 und ein technischer Fehler in die Zahl -1 gewandelt.
+
+ \subsection{Shapley Values für die Wörter im Text}
+ 
+
+\section{Resultate}
 
 \section{Diskussion}
 
+\section{Limitationen und weitere Arbeiten}
 %-------------------------
 % literature
 %-------------------------
