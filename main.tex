@@ -33,9 +33,9 @@
 
 Die Erfolge in der Suizidprävention sind seit Jahren stagnierend (404 error). Ein Suizid ist nicht nur ein Verlust einer einzelnen Person, sondern hat auch weitreichende schwere Einflüsse auf die Hinterbliebenen. Daher ist es wichtig, die Forschung in diesem Bereich voran zu treiben, um Erkentnisse zu gewinnen, wie eine geplante Selbsttötung erkannt und verhindert werden kann.
 
-Es gibt einige Versuche, mit verschiedenen Lösungsstrategien einen Algorithmus zu entwickeln, der vorhersagen kann, welche Menschen Suizidgefährdet sind(Words of Suicide, Predicting the Risk of Suicide). Allerdings zeigen diese Studien oft, dass die Genauigkeit eher schwach sind. Hinzu kommt, dass Suizid ein selten auftretendes Verhalten ist (404 error). Das bedeutet, dass wenn 1 aus 100 Personen suizidgefährded ist, und ein Modell mit 99\% Genauigkeit Suizide vorhersagen kann, so würde das Modell zwar diese eine aus 100 Personen erkennen, aber eben auch 9 weitere Personen, die nicht suizidgefährdend sind.
+Es gibt einige Versuche, mit verschiedenen Lösungsstrategien einen Algorithmus zu entwickeln, der vorhersagen kann, welche Menschen Suizidgefährdet sind (\cite{WordsOfSuicide}, Predicting the Risk of Suicide). Allerdings zeigen diese Studien oft, dass die Genauigkeit eher schwach sind. Hinzu kommt, dass Suizid ein selten auftretendes Verhalten ist (404 error). Das bedeutet, dass wenn 1 aus 100 Personen suizidgefährded ist, und ein Modell mit 99\% Genauigkeit Suizide vorhersagen kann, so würde das Modell zwar diese eine aus 100 Personen erkennen, aber eben auch 9 weitere Personen, die nicht suizidgefährdend sind.
 
-Da sich Suizid auch in der Sprache äussern kann (Words of Suicide), stellt sich die Frage, ob die neuen grossen Sprachmodelle (LLM) bei der Erkennung von Suizidgefährdeden hilfreich sein können. Anders als traditionelle Machinelearning Algorithmen wie Support Vector Machines oder Lineare Regressionen sind LLMs auf die Verarbeitung und Interpretation von Sprache spezialisiert.
+Da sich Suizid auch in der Sprache äussern kann \cite{WordsOfSuicide}, stellt sich die Frage, ob die neuen grossen Sprachmodelle (LLM) bei der Erkennung von Suizidgefährdeden hilfreich sein können. Anders als traditionelle Machinelearning Algorithmen wie Support Vector Machines oder Lineare Regressionen sind LLMs auf die Verarbeitung und Interpretation von Sprache spezialisiert.
 
 Da die LLMs in sehr vielen Bereichen Einzug erhalten haben, hat die Europäische Union den EU Artificial Intelligence Act verabschiedet. Artikel 1 dieses Acts soll den Einsatz von Artificial Intelligence (AI) Systemen regulieren mit dem Ziel, die Inovation durch AI zu fördern und gleichzeitig negativen Folgen von AI entgegenzuwirken \cite{eu_ai_act_2024}. Den Einsatz eines AI Systems zur Erkennung von Suizidgefährdeten würde durch Annex III, Paragraph 5 a und d als ein <High Risk AI System> eigestuft. Das bedeutet, dass selbst wenn LLMs perfekt Suizidgefährdungen früherkennen können, dürfen sie nur eingesetzt werden, wenn sie den Auflagen entsprechen.
 
@@ -144,17 +144,277 @@ Das LLM erhält als Textinput die Zusammensetzung von Systemprompt und Post, wie
  \caption{Beispiel eines Inputs, zu dem das LLM eine Vorhersage macht}
  \label{qt:inputtext}
 \end{figure}
- 
- Wenn das LLM als nächstes Wort auf diesen Input <Yes> antwortet, so bedeutet das, dass das LLM vorhersagt, die Authorin des Textes wäre Suizidgefährdet. Ist die Vorhersage <No>, so geht das System davon aus, die Person wäre nicht suizidgefährded. Antwortet das LLM mit einem anderen Wort, so ist die Vorhersage technisch fehlgeschlagen. Ein Yes, wird in die Zahl 1, ein No in die Zahl 0 und ein technischer Fehler in die Zahl -1 gewandelt.
 
- \subsection{Shapley Values für die Wörter im Text}
+Wenn das LLM als nächstes Wort auf diesen Input <Yes> antwortet, so bedeutet das, dass das LLM vorhersagt, die Authorin des Textes wäre Suizidgefährdet. Ist die Vorhersage <No>, so geht das System davon aus, die Person wäre nicht suizidgefährded. Antwortet das LLM mit einem anderen Wort, so ist die Vorhersage technisch fehlgeschlagen. Ein Yes, wird in die Zahl 1, ein No in die Zahl 0 und ein technischer Fehler in die Zahl -1 gewandelt.
+
+\subsection{Shapley Values für die Wörter im Text}
+Um die Shapley Values zu berechnen, muss definiert werden, was als ein Player gilt. In dieser Arbeit gilt ein Wort als ein individueller Player. Dadurch kann nun die Formel \eqref{eq:shapley_values} angewendet werden, um den individuellen Beitrag eines Wortes zur Vorhersage des LLMs zu messen.
+
+Dem LLM werden zur Berechnung der individuellen Beiträgen der gleiche Post mehrere male gezeigt, allerdings sind einige Wörter zuvor aus dem Text gelöscht worden. Es wird dann geschaut, ob das LLM auch nur mit einem Teil der Wörter die richtige Vorhersage machen kann. Wenn es erfolgreich ist, so erhalten alle Wörter, die dabei waren einen Reward (+1). Wenn die Wörter dabei waren und das LLM daher in einem technischen Fehler endet, so erhalten alle Wörter, die präsent waren eine Strafe (-1).
+
+\subsection{Verringerung des Datensatzes}
+Es werden alle möglichen Kombinationen von Texten aus dem Post getestet, die mit den Wörtern gebildet werden können. Zum Beispiel würde ein Post <Goodbye my friends> folgende Texte generiert werden.
+
+\begin{itemize}
+    \item Goodbye
+    \item Goodby my
+    \item Goodby my friends
+    \item my
+    \item my friends
+    \item friends
+\end{itemize}
+
+Das bedeutet allerdings, dass für einen Post mit p Wörtern das LLM $2^p$ mal gefragt werden muss. Da dies sehr schnell unpraktikabel gross wird, wurden für diese Arbeit nur Posts genommen, die maximal aus 9 Wörtern bestehen. Damit muss für die Berechnung der Shapley Values höchstens 512 mal eine Vorhersage generiert werden.
+
+In der Arbeit wurden nur Texte benutzt, die mit einem hohen Risiko der Suizidalität annotiert wurden. Damit ergab sich ein Datensatz aus 56 Posts, die eine Indikation auf Suizidgefährdung hatten.
+
+\subsection{Anzeichen für Suizidalität}
+In diesem Kapitel wird erläutert, bei welchen Wörtern ein grösserer Beitrag zu erwarten ist. Personen, die suizidgefährdet sind, ändern ihre Sprache und ihr verhalten. Sie äussern den Wunsch, zu sterben, reden über Schuld und Schamgefühle oder fühlen sich als Last für andere \cite{nimh2025warningsigns}. 
+
+\citeauthor{WordsOfSuicide} haben ein Discourse Marker Model erstellt, wofür sie eine Liste aus möglichen Wörtern erstellt haben, die auf Suizid deuten. Die Top Indikatoren sind dabei in Tabelle \ref{table:commonSuizideWords} ersichtlich.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+Indikator & Beschreibung & Beispielwörter \\
+\hline
+Suizid   & Ausdruck von möglichen Suizidarten & suicide, die, drown, drugs, alcohol   \\
+\hline
+Suizidale Kommunikation   & Ausdruck von Gründen für Suizid & depression, hell, alone, unbearable   \\
+\hline
+Existentielle Kommunikation   & Ausdruck von existentieller Angst & understand, fear, choice, guilt, god   \\
+\hline
+Soziale Bindungen   & Ausdruck von Sozialer Bindung & friend, children, father, mother, family   \\
+\hline
+Personalpronomen   & Ausdruck spezifischer Selbsbezüge & he, she, I, we, they, us, themselves   \\
+\hline
+Negative Emotionen   & Ausdruck generell negativer Emotionen & bash careless, offend, whine, unsucessful   \\
+\hline
+Positive Emotionen   & Ausdruck generell positiver Emotionen & beauty, beloved, like, kiss, sweet   \\
+\hline
  
+\end{tabular}
+\label{table:commonSuizideWords}
+\caption{Beispielwörter für Discourse Marker Model}
+\end{table}
+
+Für den Datensatz werden  5 verschiedene Modelle getestet und die Shapley Values der einzelnen Wörter getestet. Dann werden diese mit den Wortkategorieen aus Tabelle \ref{table:commonSuizideWords} verglichen. Die Modelle wurden von Ollama heruntergeladen \cite{ollama2025}.
 
 \section{Resultate}
+Die Resultate zeigen für die 5 Modelle die Top 10 Wörter mit den grössten Shapley Values und die schlechtesten 10 Wörter mit den tiefsten Werten. Die Werte liegen zwischen -1 (Absolut schlechtester Wert) und 1 (Absolut bester Wert). Der Wert 0 zeigt an, dass das Wort weder der Vorhersage hilft, noch die Vorhersage verschlechtert. Die Wörter wurden dann, wenn möglich, einer der Kategorien aus Tabelle \ref{table:commonSuizideWords} zugeordnet.
+
+\subsection{Artifish-llama3.2}
+Für das Modell Artifish-llama3.2 zeigt Tabelle \ref{table:artifish} die 10 Wörter, die die höchsten Shapley-Values erreichten. Tabelle \ref{table:artifish_worst} zeigt für das Modell die 10 Wörter mit den schlechtesten Werten.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    Wort & Shapley-Value & Indikator \\
+    \hline
+    self-inflicted   & 0.89 & Personalpronomen \\
+    \hline
+    die   & 0.84 & Suizid \\
+    \hline
+    suicidal   & 0.63 & Suizid \\
+    \hline
+    die.   & 0.61 & Suizid \\
+    \hline
+    suicide.   & 0.61 & Suizid \\
+    \hline
+    died   & 0.53 & Suizid \\
+    \hline
+    done.  & 0.51 & Suizid \\
+    \hline
+    living  & 0.48 & Kein Indikator \\
+    \hline
+    “do  & 0.48 & Kein Indikator \\
+    \hline
+    thoughts?  & 0.47 & Kein Indikator   \\
+    \hline
+    
+    \end{tabular}
+    \label{table:artifish}
+    \caption{Top 10 Shapley Values für Artifish-llama3.2}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    Wort & Shapley-Value & Indikator \\
+    \hline
+    leads   & -0.36 & Kein Indikator \\
+    \hline
+    situation  & -0.28 & Kein Indikator   \\
+    \hline
+    feelings   & -0.27 & Positive oder Negative Emotionen  \\
+    \hline
+    Every  & -0.27 & Kein Indikator \\
+    \hline
+    job   & -0.24 & Kein Indikator \\
+    \hline
+    morning   & -0.23 & Kein Indikator \\
+    \hline
+    meet  & -0.23 & Kein Indikator \\
+    \hline
+    makes  & -0.21 & Kein Indikator \\
+    \hline
+    him.  & -0.20 & Personalpronomen  \\
+    \hline
+    1995  & -0.19 & Kein Indikator  \\
+    \hline
+    
+    \end{tabular}
+    \label{table:artifish_worst}
+    \caption{Schlechtesten 10 Shapley Values für Artifish-llama3.2}
+\end{table}
+
+\subsection{Gemma 3}
+Für das Modell Gemma 3 zeigt Tabelle \ref{table:gemma3} die 10 Wörter, die die höchsten Shapley-Values erreichten. Tabelle \ref{table:gemma_worst} zeigt für das Modell die 10 Wörter mit den schlechtesten Werten.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    Wort & Shapley-Value & Indikator \\
+    \hline
+    suicidal   & 0.89 & Suizid \\
+    \hline
+    suicide.   & 0.76 & Suizid \\
+    \hline
+    die   & 0.62 & Suizid \\
+    \hline
+    I'll   & 0.61 & Personalpronomen \\
+    \hline
+    “do   & 0.56 & Kein Indikator \\
+    \hline
+    self-inflicted  & 0.53 & Suizid \\
+    \hline
+    die.  & 0.49 & Suizid \\
+    \hline
+    not  & 0.47 & Kein Indikator \\
+    \hline
+    suicider  & 0.47 & Suizid \\
+    \hline
+    suicide  & 0.46 & Suizid \\
+    \hline
+    
+    \end{tabular}
+    \label{table:gemma3}
+    \caption{Top 10 Shapley Values für Gemma 3}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    Wort & Shapley-Value & Indikator \\
+    \hline
+    job   & -0.48 & Kein Indikator \\
+    \hline
+    disappointing  & -0.38 & Negative Emotionen   \\
+    \hline
+    love.   & -0.36 & Positive Emotionen \\
+    \hline
+    Every  & -0.34 & Kein Indikator \\
+    \hline
+    meet   & -0.28 & Kein Indikator \\
+    \hline
+    crime   & -0.27 & Kein Indikator \\
+    \hline
+    leads  & -0.26 & Kein Indikator \\
+    \hline
+    knows  & -0.25 & Kein Indikator \\
+    \hline
+    list.  & -0.24 & Kein Indikator  \\
+    \hline
+    love  & -0.21 & Positive Emontionen  \\
+    \hline
+    
+    \end{tabular}
+    \label{table:gemma_worst}
+    \caption{Schlechtesten 10 Shapley Values für Gemma 3}
+\end{table}
+
+\subsection{Llama3.2}
+Für das Modell Llama3.2 zeigt Tabelle \ref{table:llama3} die 10 Wörter, die die höchsten Shapley-Values erreichten. Tabelle \ref{table:llama3_worst} zeigt für das Modell die 10 Wörter mit den schlechtesten Werten.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    Wort & Shapley-Value & Indikator \\
+    \hline
+    911. & 0.63 & Kein Indikator \\
+    \hline
+    injury & 0.51 & Kein Indikator \\
+    \hline
+    hurts & 0.39 & Kein Indikator \\
+    \hline
+    leads  & 0.38 & Kein Indikator \\
+    \hline
+    day.   & 0.37 & Kein Indikator \\
+    \hline
+    notice.  & 0.36 & Kein Indikator \\
+    \hline
+    Life  & 0.33 & Kein Indikator \\
+    \hline
+    live  & 0.31 & Kein Indikator \\
+    \hline
+    living  & 0.30 & Kein Indikator \\
+    \hline
+    not  & 0.28 & Kein Indikator \\
+    \hline
+    
+    \end{tabular}
+    \label{table:llama3}
+    \caption{Top 10 Shapley Values für Llama3.2}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+    Wort & Shapley-Value & Indikator \\
+    \hline
+    kill   & -0.76 & Suizid \\
+    \hline
+    suicide  & -0.34 & Suizid \\
+    \hline
+    help   & -0.34 & Kein Indikator \\
+    \hline
+    suicide.  & -0.33 & Suizid \\
+    \hline
+    die   & -0.32 & Suizid \\
+    \hline
+    methods   & -0.31 & Suizid \\
+    \hline
+    call  & -0.28 & Kein Indikator \\
+    \hline
+    plan  & -0.25 & Kein Indikator \\
+    \hline
+    suicider & -0.24 & Suizid  \\
+    \hline
+    here, & -0.24 & Kein Indikator \\
+    \hline
+    
+    \end{tabular}
+    \label{table:llama3_worst}
+    \caption{Schlechtesten 10 Shapley Values für Llama3.2}
+\end{table}
 
 \section{Diskussion}
 
+
+
 \section{Limitationen und weitere Arbeiten}
+
+Satzzeichen entfernen.
+Nicht alle Wörter können einfach eingeteilt werden.
+Berechnung für grosse Texte schwierig.
+Prediction und dann was?
 %-------------------------
 % literature
 %-------------------------
